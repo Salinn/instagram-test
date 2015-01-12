@@ -25,12 +25,14 @@ class AuthenticationsController < ApplicationController
   # POST /authentications.json
   def create
     auth = request.env["omniauth.auth"]
-    current_user.authentications.find_or_create_by_provider_and_uid(auth['provider'], auth['uid']).update_attributes
-    ({
-        :last_name => self.last_name,
-        :first_name => self.first_name,
-    })
+    current_user.authentications.find_or_create_by_provider_and_uid(auth['provider'], auth['uid'])
+    if auth['provider'] == 'facebook'
+      token = auth['credentials']['token']
+      session[:fb_access_token] = token
+      session[:fbgraph_uid] = auth['uid']
+    end
     flash[:notice] = "Authentication successful."
+
     redirect_to '/'
   end
 

@@ -34,6 +34,8 @@ gem 'omniauth-facebook'
 gem 'better_errors', '1.0.1'
 gem 'binding_of_caller', '0.7.2'
 gem 'will_paginate', '~> 3.0.6'
+gem 'koala'
+
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
   gem 'sdoc', require: false
