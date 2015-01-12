@@ -5,3 +5,9 @@
 <a href="/auth/instagram" class="auth_provider">
   <%= image_tag "https://pbs.twimg.com/profile_images/1550954462/instagramIcon_400x400.png", :size => "64x64" %>
 </a>
+
+<% @instagram.each do |instagram| %>
+
+    <%= image_tag instagram.images.standard_resolution.url %>
+
+<% end %>
