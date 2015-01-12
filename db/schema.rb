@@ -56,8 +56,6 @@ ActiveRecord::Schema.define(version: 20150112200954) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "name"
-    t.string   "oauth_token"
-    t.datetime "oauth_token_expires_at"
     t.string   "fb_access_token"
   end
 
