@@ -24,17 +24,10 @@ class AuthenticationsController < ApplicationController
   # POST /authentications
   # POST /authentications.json
   def create
-    @authentication = Authentication.new(authentication_params)
-
-    respond_to do |format|
-      if @authentication.save
-        format.html { redirect_to @authentication, notice: 'Authentication was successfully created.' }
-        format.json { render action: 'show', status: :created, location: @authentication }
-      else
-        format.html { render action: 'new' }
-        format.json { render json: @authentication.errors, status: :unprocessable_entity }
-      end
-    end
+    auth = request.env["rack.auth"]
+    current_user.authentications.find_or_create_by_provider_and_uid(auth['provider'], auth['uid'])
+    flash[:notice] = "Authentication successful."
+    redirect_to '/'
   end
 
   # PATCH/PUT /authentications/1
@@ -54,11 +47,10 @@ class AuthenticationsController < ApplicationController
   # DELETE /authentications/1
   # DELETE /authentications/1.json
   def destroy
+    @authentication = current_user.authentications.find(params[:id])
     @authentication.destroy
-    respond_to do |format|
-      format.html { redirect_to authentications_url }
-      format.json { head :no_content }
-    end
+    flash[:notice] = "Successfully destroyed authentication."
+    redirect_to authentications_url
   end
 
   private
