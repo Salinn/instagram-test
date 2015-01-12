@@ -28,6 +28,11 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 gem 'instagram'
 gem 'devise'
+gem 'omniauth'
+gem 'omniauth-instagram'
+gem 'omniauth-facebook'
+gem 'better_errors', '1.0.1'
+gem 'binding_of_caller', '0.7.2'
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
   gem 'sdoc', require: false
