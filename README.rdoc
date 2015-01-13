@@ -1,28 +1,110 @@
-== README
+This is a quick guide to how to add images to instagram
+Add the following gems to the Gemfile: 
+gem 'koala'
+gem 'omniauth-facebook'
+The first gem allows you to gain access to the facebook graph api and the second gem allows you to authenticate using oauth to facebook, which is needed to pull down the users photos.
+To do this with the current setup of using devise I made a new authentications table with a provider:string (instagram, facebook, ...), uid:string (the user_id of that website).
+This allows us to link multiple accounts together without having to worry about if their emails match.
+Go to the authentications controller and change the create and destroy methods to the following:
+def create
+auth = request.env["omniauth.auth"]
+current_user.authentications.find_or_create_by_provider_and_uid(auth['provider'], auth['uid'])
+if auth['provider'] == 'facebook'
+token = auth['credentials']['token']
+session[:fb_access_token] = token
+session[:fbgraph_uid] = auth['uid']
+end
+flash[:notice] = "Authentication successful."
+redirect_to '/'
+end
+def destroy
+@authentication = current_user.authentications.find(params[:id])
+@authentication.destroy
+flash[:notice] = "Successfully destroyed authentication."
+redirect_to authentications_url
+end
+This allows use in the create to find or create them account depending on if they have an facebook account register or not, we then pass in the provider and uid to tell them that it is facebook and what the facebook user id is. Also this adds your facebook token to be used later.
+under the authentication model add the one line of:
+belongs_to :user
+under the user model add the one line of:
+has_many :authentications
+def self.facebook auth
+@facebook ||= Koala::Facebook::API.new(auth)
+end
+This allows multiple authentications to be attached to one user and connect to the facebook graph api through Koala.
+add a file at /config/initializers/omniauth.rb and in here add the following
+Rails.application.config.middleware.use OmniAuth::Builder do
+provider :facebook, ENV['FB_APP_ID'], ENV['FB_APP_SECRET'],:scope => 'user_about_me,user_photos'#, :display => 'popup'
+end
+This file allow us to use the two gems
+To pull pictures down from facebook we use, this needs to be in a controllers show or index:
+@facebook = User.facebook(session[:fb_access_token])
+To get this you nee
+In the view you can display the images by doing the following.
+<% @instagram.each do |instagram| %>
+<%= image_tag instagram.images.thumbnail.url %>
+<% end %>
+<%photos = @facebook.get_connections("me","photos/uploaded") %>
+<%photos.each do |photo| %>
+<%= image_tag photo['images'].last['source'] %>
+<% end %>
+This will get the smallest picture, to get the largest picture change .last to .first. Their is a range of photo sizes to pick from.
+<a href="/auth/facebook" class="auth_provider">
+<%= image_tag 'https://lh5.ggpht.com/_XklY7dK6yGsYt53X15RIp7-tbdjWMwQwl_iUAcW-uSq_8zAprmywdn5DQfBHvxZurs1=w300', :size => "64x64" %>
+</a>
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+==================================================================================================================================================================
 
-Things you may want to cover:
+==================================================================================================================================================================
 
-* Ruby version
+==================================================================================================================================================================
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+This is a quick guide to how to add images to instagram
+Add the following gems to the Gemfile: 
+gem 'instagram'
+gem 'omniauth-instagram'
+The first gem allows you to gain access to instagram api and the second gem allows you to authenticate using oauth to instagram, which is needed to pull down the users photos.
+To do this with the current setup of using devise I made a new authentications table with a provider:string (instagram, facebook, ...), uid:string (the user_id of that website).
+This allows us to link multiple accounts together without having to worry about if their emails match.
+Go to the authentications controller and change the create and destroy methods to the following:
+def create
+auth = request.env["omniauth.auth"]
+current_user.authentications.find_or_create_by_provider_and_uid(auth['provider'], auth['uid'])
+flash[:notice] = "Authentication successful."
+redirect_to '/'
+end
+def destroy
+@authentication = current_user.authentications.find(params[:id])
+@authentication.destroy
+flash[:notice] = "Successfully destroyed authentication."
+redirect_to authentications_url
+end
+This allows use in the create to find or create them account depending on if they have an instagram account register or not, we then pass in the provider and uid to tell them that it is instagram and what the instagrams user id.
+under the authentication model add the one line of:
+belongs_to :user
+under the user model add the one line of:
+has_many :authentications
+This allows multiple authentications to be attached to one user
+add a file at /config/initializers/instagram.rb and in here add the following 
+require "instagram"
+Instagram.configure do |config|
+config.client_id = ENV['INSTAGRAM_ID']
+config.access_token = ENV['INSTAGRAM_SECRET']
+end
+add a file at /config/initializers/omniauth.rb and in here add the following
+Rails.application.config.middleware.use OmniAuth::Builder do
+provider :instagram, ENV['INSTAGRAM_ID'], ENV['INSTAGRAM_SECRET']
+end
+These files allow us to use the two gems
+To pull pictures down from instagram we use, this needs to be in a controllers show or index:
+@instagram = Instagram.user_recent_media(current_user.authentications.where(provider: "instagram").first.uid) # 60 appears to be the max
+To get more pictures using pagination you need to use the next max id and you can get this by doing this.
+@page_2 = @instagram.pagination.next_max_id
+In the view you can display the images by doing the following.
+<% @instagram.each do |instagram| %>
+<%= image_tag instagram.images.thumbnail.url %>
+<% end %>
+if you want a normal sized picture do standard_resolution insteadl of thumbnail
+<a href="/auth/instagram" class="auth_provider">
+<%= image_tag "https://pbs.twimg.com/profile_images/1550954462/instagramIcon_400x400.png", :size => "64x64" %>
+</a>
