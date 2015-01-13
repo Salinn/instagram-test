@@ -2,7 +2,7 @@
 
 <h1>
   <%pa = @facebook.get_object("me") %>
-  <%con = @facebook.get_connections("me","photos") %>
+  <%con = @facebook.get_connections("me","photos/uploaded") %>
   <%= pa['email'] %>
   <br />
   <br />
@@ -11,7 +11,7 @@
   <br />
   <br />
   <%con.each do |c| %>
-  <%= image_tag c['link']  %>
+  <%= image_tag c['images'].last['source']  %>
       <% end %>
 </h1>
 <a href="/auth/facebook" class="auth_provider">
