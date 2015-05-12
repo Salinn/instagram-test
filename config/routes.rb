@@ -2,6 +2,10 @@ InstagramTest::Application.routes.draw do
 
 
 
+  resources :image_libraries
+
+  resources :images
+
   get '/auth/:provider/callback' => 'authentications#create'
   resources :authentications
 

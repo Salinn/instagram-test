@@ -36,6 +36,15 @@ gem 'binding_of_caller', '0.7.2'
 gem 'will_paginate', '~> 3.0.6'
 gem 'koala'
 
+# for aws cloud storage
+gem 'fog'
+# photo resizing
+gem "mini_magick"
+# file upload solution
+gem 'carrierwave'
+
+gem "rails_config"
+
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
   gem 'sdoc', require: false
